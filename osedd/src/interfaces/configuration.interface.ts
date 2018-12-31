@@ -1,4 +1,10 @@
 export interface Configuration {
-    prefix: string;
-    token: string;
+    discord: {
+        prefix: string;
+        token: string;
+    },
+    swgohHelp: {
+        username: string,
+        password: string
+    }
 }

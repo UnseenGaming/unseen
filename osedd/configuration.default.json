@@ -1,4 +1,10 @@
 {
-    "prefix": "~",
-    "token": "<YOUR DISCORD TOKEN>"
+    "discord": {
+        "prefix": "~",
+        "token": "<YOUR DISCORD TOKEN>"
+    },
+    "swgohHelp": {
+        "username": "<YOUR SWGOH.HELP USERNAME>",
+        "password": "<YOUR SWGOH.HELP PASSWORD>"
+    }
 }
