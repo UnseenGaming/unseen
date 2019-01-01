@@ -4,8 +4,10 @@ import { LoggerService } from './logger.service';
 import { BaseCommand } from '../commands/base.command';
 import { HelpCommand } from '../commands/help.command';
 
+import { commandRegister } from '../commands/register';
+
 export class DiscordService {
-    private static instance: DiscordService;
+    private static _instance: DiscordService;
     private logger: LoggerService;
     private commands: { [command: string] : BaseCommand; } 
 
@@ -13,11 +15,11 @@ export class DiscordService {
         private prefix: string,
         private token: string
     ) {
-        if (DiscordService.instance) {
-            return DiscordService.instance;
+        if (DiscordService._instance) {
+            return DiscordService._instance;
         }
 
-        DiscordService.instance = this;
+        DiscordService._instance = this;
 
         this.logger = new LoggerService();
         this.logger.verbose(`Creating a new instance of DiscordService`);
@@ -25,6 +27,10 @@ export class DiscordService {
         this.commands = {};
 
         this.initialize();
+    }
+
+    public static get instance(): DiscordService {
+        return this._instance;
     }
 
     private async initialize() {
@@ -47,9 +53,11 @@ export class DiscordService {
         }
 
         this.registerCommand('help', new HelpCommand(this.commands, this.prefix));
+        commandRegister(this, this.prefix);
     }
 
     public registerCommand(command: string, commandHandler: BaseCommand){
+        this.logger.info(`Registering command ${command}`);
         this.commands[command] = commandHandler;
     }
 
@@ -77,7 +85,7 @@ export class DiscordService {
         }
     }
 
-    private async removeReaction(message: Discord.Message, emojiName?:string){
+    public async removeReaction(message: Discord.Message, emojiName?:string){
         const removeReactions = message.reactions.filter((reaction) => {
             if(reaction.me == true){
                 if(emojiName !== undefined){

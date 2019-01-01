@@ -142,7 +142,7 @@ export class SwgohHelpPlayerToon {
 
     // @arrayProp()
     // crew: something;
-    // Not bery populated, fotf has this:
+    // Not very populated, fotf has this:
     /*
                       "unitId":"FIRSTORDERTIEPILOT",
                   "slot":0,
