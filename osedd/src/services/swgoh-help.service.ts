@@ -36,6 +36,10 @@ export class SwgohHelpService {
         //     allycodes: ["675513975"]
         // })
 
+        this.fetchGuild({
+            allycodes: ["675513975"]
+        })
+
         // this.fetchSquads();
     }
 
@@ -144,5 +148,16 @@ export class SwgohHelpService {
         } else {
             return await SwgohHelpSquadModel.find();
         }
+    }
+
+    async fetchGuild(payload: {
+        allycodes: string[],
+        language?: string,
+        enums?: boolean,
+        structure?: boolean,
+        project?: string
+    }){
+        let { result, error, warning } = await this.swapi.fetchGuild( payload );
+        console.log(result);
     }
 }

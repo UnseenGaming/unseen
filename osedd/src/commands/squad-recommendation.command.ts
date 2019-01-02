@@ -7,7 +7,7 @@ import { SwgohHelpService } from '../services/swgoh-help.service';
 import { BaseCommand } from './base.command';
 import { HelpMessageFields } from './base.command';
 import { SwgohHelpSquadToon } from '../collections/Squad.collection';
-import { SwgohHelpPlayer } from '../collections/Player.collection';
+import { SwgohHelpPlayer, SwgohHelpPlayerToon } from '../collections/Player.collection';
 
 export class SquadRecommendationCommand extends BaseCommand {
     private discordService: DiscordService;
@@ -46,36 +46,52 @@ export class SquadRecommendationCommand extends BaseCommand {
 
             const squads = await this.swgohHelpService.fetchSquads(group);
 
-            const response = {embed: {
-                color: 3447003,
-                title: "Squad recommendations",
-                description: `Recommended squads for ${group}:`,
-                fields: [],
-                timestamp: new Date(),
-              }
-            };
-
             for(let i=0; i<squads.length; i++){
                 const response = {embed: {
-                    color: 3447003,
-                    title: squads[i].name,
-                    description: squads[i].phase,
+                    color: 0x1ffc60,
+                    author: {
+                        name: squads[i].name
+                    },
+                    description: `${squads[i].phase}\n`,
                     fields: [],
                     timestamp: new Date(),
                   }
                 };
 
+                let allRequirementsMet = true;
+                let unlockedToons = true;
+
+                response.embed.description += `:star::gear::level_slider:\n`;
+
+
                 squads[i].team.forEach((squadMember) => {
-                    const playerToon = player.roster.find((toon) => toon.defId === squadMember.name);
+                    let playerToon = player.roster.find((toon) => toon.defId === squadMember.name);
+
+                    if(playerToon === undefined){
+                        playerToon = {
+                            rarity: 0,
+                            gear: 0,
+                            level: 0,
+                            skills: []
+                        } as SwgohHelpPlayerToon
+
+                        unlockedToons = false;
+                        response.embed.color = 0xfc1f4c;
+                    }
                     
-                    response.embed.fields.push({
-                        name: squadMember.name,
-                        value: `
-${this.checkRequirement(squadMember.rarity, playerToon.rarity)} Rarity: ${squadMember.rarity}
-${this.checkRequirement(squadMember.gear, playerToon.gear)} Gear level: ${squadMember.gear} 
-${this.checkRequirement(squadMember.level, playerToon.level)} Level: ${squadMember.level} 
-Skills: ${squadMember.skills.join(', ')}`
-                    })
+                    const checkRequirements = [
+                        this.checkRequirement(squadMember.rarity, playerToon.rarity),
+                        this.checkRequirement(squadMember.gear, playerToon.gear),
+                        this.checkRequirement(squadMember.level, playerToon.level)
+                    ]
+
+                    allRequirementsMet = allRequirementsMet && checkRequirements.every((requirement) => requirement === ':white_check_mark:');
+
+                    response.embed.description += `${checkRequirements.join('')} ${squadMember.name}\n`;
+
+                    if(!allRequirementsMet && unlockedToons){
+                        response.embed.color = 0xfc601f;
+                    }
                 });
 
                 await message.reply(response);
@@ -91,7 +107,7 @@ Skills: ${squadMember.skills.join(', ')}`
         if(goal>current){
             return ':no_entry_sign:';
         } else {
-            return ':checkered_flag:';
+            return ':white_check_mark:';
         }
     }
 
