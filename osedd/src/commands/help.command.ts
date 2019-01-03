@@ -28,7 +28,8 @@ export class HelpCommand extends BaseCommand {
                 value: this.commands[command].description()
               });
         });
-        await message.reply(response);
+        
+        await this.discordService.reply(message, response);
     }
 
     description(): string{

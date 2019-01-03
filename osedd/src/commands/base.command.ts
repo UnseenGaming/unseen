@@ -1,5 +1,7 @@
 import * as Discord from 'discord.js';
+
 import { LoggerService } from '../services/logger.service';
+import { DiscordService } from '../services/discord.service';
 
 export interface HelpMessageFields {
     name: string,
@@ -8,9 +10,11 @@ export interface HelpMessageFields {
 
 export class BaseCommand {
     protected logger: LoggerService;
+    protected discordService: DiscordService;
 
     constructor(){
         this.logger = new LoggerService();
+        this.discordService = DiscordService.instance;
     }
 
     async handleCommand(message: Discord.Message, parameters: string[]): Promise<void>{
@@ -31,8 +35,7 @@ export class BaseCommand {
           }
         };
 
-        await message.reply(response);
-
+        await this.discordService.reply(message, response);
     }
 
     helpDescription(): string {

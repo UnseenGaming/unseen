@@ -10,7 +10,6 @@ import { SwgohHelpSquadToon } from '../collections/Squad.collection';
 import { SwgohHelpPlayer, SwgohHelpPlayerToon } from '../collections/Player.collection';
 
 export class SquadRecommendationCommand extends BaseCommand {
-    private discordService: DiscordService;
     private swgohHelpService: SwgohHelpService;
     private groups: string[];
 
@@ -94,7 +93,7 @@ export class SquadRecommendationCommand extends BaseCommand {
                     }
                 });
 
-                await message.reply(response);
+                await this.discordService.reply(message, response);
             }
         } else {
             await this.discordService.removeReaction(message);

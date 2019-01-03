@@ -108,5 +108,9 @@ export class DiscordService {
         return Object.keys(this.commands).includes(command);
     }
 
+    public async reply(message: Discord.Message, content: any){
+        message.channel.send(content);
+    }
+
     member: number;
 }

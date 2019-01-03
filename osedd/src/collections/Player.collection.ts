@@ -4,6 +4,7 @@ import { prop } from 'typegoose';
 import { arrayProp } from 'typegoose';
 import { ModelType } from 'typegoose';
 import { InstanceType } from 'typegoose';
+import { instanceMethod } from 'typegoose';
 import { Typegoose } from 'typegoose';
 
 export class SwgohHelpArenaSquadMember {
