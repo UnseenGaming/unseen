@@ -32,7 +32,7 @@ export class SquadRecommendationCommand extends BaseCommand {
 
     async handleCommand(message: Discord.Message, parameters: string[]): Promise<void>{
         
-        if(parameters !== null && parameters.length > 1){
+        if(parameters !== null && parameters.length > 0){
             const user = parameters[0];
             const group = parameters[1];
             
@@ -44,6 +44,7 @@ export class SquadRecommendationCommand extends BaseCommand {
             const player = players[0];
 
             const squads = await this.swgohHelpService.fetchSquads(group);
+            const characterDefs = await this.swgohHelpService.fetchUnitList();
 
             for(let i=0; i<squads.length; i++){
                 const response = {embed: {
@@ -62,7 +63,6 @@ export class SquadRecommendationCommand extends BaseCommand {
 
                 response.embed.description += `:star::gear::level_slider:\n`;
 
-
                 squads[i].team.forEach((squadMember) => {
                     let playerToon = player.roster.find((toon) => toon.defId === squadMember.name);
 
@@ -77,6 +77,8 @@ export class SquadRecommendationCommand extends BaseCommand {
                         unlockedToons = false;
                         response.embed.color = 0xfc1f4c;
                     }
+
+                    const characterDef = characterDefs.find((char) => char.baseId === squadMember.name);
                     
                     const checkRequirements = [
                         this.checkRequirement(squadMember.rarity, playerToon.rarity),
@@ -86,7 +88,7 @@ export class SquadRecommendationCommand extends BaseCommand {
 
                     allRequirementsMet = allRequirementsMet && checkRequirements.every((requirement) => requirement === ':white_check_mark:');
 
-                    response.embed.description += `${checkRequirements.join('')} ${squadMember.name}\n`;
+                    response.embed.description += `${checkRequirements.join('')} ${characterDef.nameKey}\n`;
 
                     if(!allRequirementsMet && unlockedToons){
                         response.embed.color = 0xfc601f;

@@ -1,0 +1,26 @@
+[{
+    "group": "hstr",
+    "groupName": "Heroic Sith",
+    "phase": null,
+    "name": "Gils nightsisters",
+    "note": null,
+    "url": null,
+    "team": [{
+        "name": "MOTHERTALZIN",
+        "rarity": 7,
+        "level": 85,
+        "gear": 12,
+        "skills": ["leaderskill_MOTHERTALZIN"],
+        "required": true,
+        "leader": true
+    },{
+        "name": "ASAJVENTRESS",
+        "rarity": 7,
+        "level": 85,
+        "gear": 12,
+        "skills": ["uniqueskill_ASAJVENTRESS01"],
+        "required": true,
+        "leader": false
+    }]
+}]
+
