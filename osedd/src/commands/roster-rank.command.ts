@@ -10,7 +10,6 @@ import { SwgohHelpPlayer, SwgohHelpPlayerToon } from '../collections/Player.coll
 
 export class RosterRankCommand extends BaseCommand {
     private swgohHelpService: SwgohHelpService;
-    private groups: string[];
 
     private topNumberOfToons = 20;
 
@@ -19,16 +18,11 @@ export class RosterRankCommand extends BaseCommand {
     ){
         super();
         this.swgohHelpService = new SwgohHelpService();
-        this.groups = [];
 
         this.init();
     }
 
     private async init(){
-        const squads = await this.swgohHelpService.fetchSquads();
-        
-        this.groups = squads.map((squad) => squad.group as string);
-        this.groups = [...new Set(this.groups)];
     }
 
     async handleCommand(message: Discord.Message, parameters: string[]): Promise<void>{

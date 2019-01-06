@@ -63,13 +63,19 @@ export class SwgohHelpService {
 
         for(let i=0; i<allycodes.length;i++){
             const allycode = Number.parseInt(payload.allycodes[i], 10);
-            const player = await SwgohHelpPlayerModel.findOne({allyCode: allycode});
-
+            // const player = await SwgohHelpPlayerModel.findOne({allyCode: allycode});
+            const player = (await SwgohHelpPlayerModel.find({allyCode: allycode}).sort({updated:-1}).limit(1))[0];
             if(player == null){
                 swgohAllycodes.push(payload.allycodes[i]);
             } else {
                 this.logger.info(`Found player with allycode ${player.allyCode} in database`);
-                players.push(player);
+
+                if((Date.now() - (player.updated || 0)) / (3600000) >= 1){
+                    this.logger.info(`Data for player with allycode ${player.allyCode} is stale, retrieving new`);
+                    swgohAllycodes.push(payload.allycodes[i]);
+                } else {
+                    players.push(player);
+                }
             }
         }
 
@@ -224,6 +230,8 @@ export class SwgohHelpService {
         const numberOfSquads = await SwgohHelpSquadModel.estimatedDocumentCount();
 
         if(numberOfSquads === 0){
+            this.logger.info(`Creating squad database`);
+
             // NOTE: The swgoh.help set of squads are far too many and are not good squads at the moment. 
             // this.logger.warn(`No squads in database, initialising collection with swgoh.help`);
             // let { result, error, warning } = await this.swapi.fetchSquads();
@@ -272,6 +280,7 @@ export class SwgohHelpService {
             //         }
             //     }
             // }
+
             const squads = await fs.readJSON(`./data/squads.json`);
             for(let i=0; i<squads.length; i++){
                 const dbSquad = new SwgohHelpSquadModel(squads[i]);
