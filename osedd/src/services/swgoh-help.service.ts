@@ -15,22 +15,21 @@ import { SwgohHelpSkills } from '../collections/Skills.collection';
 
 export class SwgohHelpService {
     private static instance: SwgohHelpService;
-    private logger: LoggerService;
+    private logger!: LoggerService;
     private swapi: ApiSwgohHelp; 
 
     constructor(
         private username?: string,
         private password?: string
     ) {
-        this.logger = new LoggerService();
-
         if (SwgohHelpService.instance) {
             return SwgohHelpService.instance;
         }
 
         SwgohHelpService.instance = this;
 
-        this.logger.info(`Regestering with swgoh.help with username ${this.username}`);
+        this.logger = new LoggerService();
+        this.logger.info(`Loging in to swgoh.help with username ${this.username}`);
 
         this.swapi = new ApiSwgohHelp({
             username: this.username,
@@ -59,7 +58,7 @@ export class SwgohHelpService {
         project?: string
     }): Promise<SwgohHelpPlayer[]>{
         const allycodes = payload.allycodes;
-        const swgohAllycodes = [];
+        const swgohAllycodes: string[] = [];
         const players: Array<InstanceType<SwgohHelpPlayer>> = [];
 
         for(let i=0; i<allycodes.length;i++){

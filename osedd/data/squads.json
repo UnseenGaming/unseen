@@ -5,6 +5,7 @@
     "name": "Gils nightsisters",
     "note": null,
     "url": null,
+    "size": 5,
     "team": [{
         "name": "MOTHERTALZIN",
         "rarity": 7,
@@ -21,6 +22,58 @@
         "skills": ["uniqueskill_ASAJVENTRESS01"],
         "required": true,
         "leader": false
+    },{
+        "name": "NIGHTSISTERZOMBIE",
+        "rarity": 7,
+        "level": 85,
+        "gear": 12,
+        "skills": [
+            "basicskill_NIGHTSISTERZOMBIE",
+            "specialskill_NIGHTSISTERZOMBIE01",
+            "uniqueskill_NIGHTSISTERZOMBIE01",
+            "uniqueskill_NIGHTSISTERZOMBIE02"
+        ],
+        "required": true,
+        "leader": false
+    },{
+        "name": "DAKA",
+        "rarity": 7,
+        "level": 85,
+        "gear": 12,
+        "skills": [],
+        "required": false,
+        "leader": false
+    },{
+        "name": "NIGHTSISTERSPIRIT",
+        "rarity": 7,
+        "level": 85,
+        "gear": 12,
+        "skills": [],
+        "required": false,
+        "leader": false
+    },{
+        "name": "NIGHTSISTERACOLYTE",
+        "rarity": 7,
+        "level": 85,
+        "gear": 10,
+        "skills": [],
+        "required": false,
+        "leader": false
+    },{
+        "name": "TALIA",
+        "rarity": 7,
+        "level": 85,
+        "gear": 11,
+        "skills": [],
+        "required": false,
+        "leader": false
+    },{
+        "name": "NIGHTSISTERINITIATE",
+        "rarity": 7,
+        "level": 85,
+        "gear": 7,
+        "skills": [],
+        "required": false,
+        "leader": false
     }]
 }]
-

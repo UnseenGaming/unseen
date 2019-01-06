@@ -7,7 +7,20 @@ import { SwgohHelpService } from '../services/swgoh-help.service';
 import { BaseCommand } from './base.command';
 import { HelpMessageFields } from './base.command';
 import { SwgohHelpSquadToon } from '../collections/Squad.collection';
-import { SwgohHelpPlayer, SwgohHelpPlayerToon } from '../collections/Player.collection';
+import { SwgohHelpPlayer, SwgohHelpPlayerToon, SwgohHelpToonSkill } from '../collections/Player.collection';
+
+interface SquadRequirements {
+    requirements: {
+        rarity: boolean;
+        gear: boolean;
+        level: boolean;
+        skills: boolean;
+    };
+    required: boolean;
+    leader: boolean;
+    ready: boolean;
+    name: string;
+}
 
 export class SquadRecommendationCommand extends BaseCommand {
     private swgohHelpService: SwgohHelpService;
@@ -30,6 +43,8 @@ export class SquadRecommendationCommand extends BaseCommand {
         this.groups = squads.map((squad) => squad.group as string);
         this.groups = [...new Set(this.groups)];
     }
+
+
 
     async handleCommand(message: Discord.Message, parameters: string[]): Promise<void>{
         
@@ -60,47 +75,51 @@ export class SquadRecommendationCommand extends BaseCommand {
                   }
                 };
 
-                let allRequirementsMet = true;
-                let unlockedToons = true;
-
-                response.embed.description += `:star::gear::level_slider:\n`;
+                response.embed.description += `:star::gear::level_slider::asterisk:\n`;
 
                 if(squads[i].team !== undefined){
                     const squadTeam = squads[i].team as SwgohHelpSquadToon[];
+
+                    const squadRequirements: SquadRequirements[] = [];
+
                     squadTeam.forEach((squadMember) => {
-                        let playerToon = playerRoster.find((toon) => toon.defId === squadMember.name);
-                        
-                        if(playerToon === undefined){
-                            playerToon = {
-                                rarity: 0,
-                                gear: 0,
-                                level: 0,
-                                skills: []
-                            } as SwgohHelpPlayerToon;
-                            
-                            unlockedToons = false;
-                            response.embed.color = 0xfc1f4c;
-                        }
-                        
+                        const playerToon = playerRoster.find((toon) => toon.defId === squadMember.name);
                         const characterDef = characterDefs.find((char) => char.baseId === squadMember.name);
                         
-                        const checkRequirements = [
-                            this.checkRequirement(squadMember.rarity, playerToon.rarity),
-                            this.checkRequirement(squadMember.gear, playerToon.gear),
-                            this.checkRequirement(squadMember.level, playerToon.level)
-                        ];
-                        
-                        allRequirementsMet = allRequirementsMet && checkRequirements.every((requirement) => requirement === ':white_check_mark:');
-                        
+                        const checkRequirements: SquadRequirements = {
+                            requirements: {
+                                rarity: false,
+                                gear: false,
+                                level: false,
+                                skills: false,
+                            },
+                            required: squadMember.required || false,
+                            leader: squadMember.leader || false,
+                            ready: false,
+                            name: ''
+                        };
+
                         if(characterDef && characterDef.nameKey){
-                            response.embed.description += `${checkRequirements.join('')} ${characterDef.nameKey}\n`;
-                        }else {
-                            response.embed.description += `${checkRequirements.join('')} ${squadMember.name}\n`;
+                            checkRequirements.name = characterDef.nameKey;
+                        }else{
+                            checkRequirements.name = squadMember.name || 'Unknown toon';
+                        }
+
+                        if(playerToon !== undefined){
+                            // const checkRequirements = {
+                            checkRequirements.requirements.rarity = this.checkRequirement(squadMember.rarity, playerToon.rarity);
+                            checkRequirements.requirements.gear = this.checkRequirement(squadMember.gear, playerToon.gear);
+                            checkRequirements.requirements.level = this.checkRequirement(squadMember.level, playerToon.level);
+                            checkRequirements.requirements.skills = this.checkSkills(squadMember.skills || [], playerToon.skills);
+                            checkRequirements.ready = checkRequirements.requirements.rarity && checkRequirements.requirements.gear && checkRequirements.requirements.level && checkRequirements.requirements.skills;
                         }
                         
-                        if(!allRequirementsMet && unlockedToons){
-                            response.embed.color = 0xfc601f;
-                        }
+                        squadRequirements.push(checkRequirements);
+                    });
+                    
+                    squadRequirements.forEach((squadMemberRequirement) => {                        
+                        response.embed.description += `${Object.keys(squadMemberRequirement.requirements).map((req) => this.requirmentToIcon(squadMemberRequirement.requirements[req])).join('')} `;
+                        response.embed.description += ` ${squadMemberRequirement.leader ? '**': ''}${squadMemberRequirement.required ? '*': ''}${squadMemberRequirement.name}${squadMemberRequirement.leader ? '**': ''}${squadMemberRequirement.required ? '*': ''}\n`;
                     });
                 }
 
@@ -113,11 +132,51 @@ export class SquadRecommendationCommand extends BaseCommand {
         }
     }
 
+    requirmentToIcon(pass: boolean){
+        if(pass){
+            return ':white_check_mark:';
+        } else {
+            return ':no_entry_sign:';
+        }
+    }
+
     checkRequirement(goal: number | undefined, current: number | undefined){
         if((goal || 0)>(current || 0)){
-            return ':no_entry_sign:';
+            return false;
         } else {
-            return ':white_check_mark:';
+            return true;
+        }
+    }
+
+    checkSkills(targetSkills: string[], toonSkills: SwgohHelpToonSkill[] | undefined){
+        let skillsOk = true;
+
+        if(toonSkills !== undefined && toonSkills.length > 0){
+            toonSkills.forEach((skill) => {
+                skillsOk = skillsOk && this.checkSkill(targetSkills, skill);
+            });
+        } else {
+            skillsOk = false;
+        }
+
+        return skillsOk;
+    }
+
+    checkSkill(targetSkills: string[], toonSkill: SwgohHelpToonSkill){
+        if(toonSkill.tier){
+            if(toonSkill.isZeta){
+                const inRequiredList = targetSkills.find((requiredSkill) => requiredSkill === toonSkill.id);
+                if(inRequiredList){
+                    return toonSkill.tier >= 8;
+                } else {
+                    return toonSkill.tier >= 7;
+                }
+            } else {
+                // FIXME: Some skills have max tier 7, need a way to check max skill level
+                return toonSkill.tier >= 8;                
+            }
+        } else {
+            return false;
         }
     }
 

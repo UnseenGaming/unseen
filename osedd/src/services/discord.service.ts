@@ -8,22 +8,21 @@ import { commandRegister } from '../commands/register';
 
 export class DiscordService {
     private static _instance: DiscordService;
-    private logger: LoggerService;
-    private commands: { [command: string] : BaseCommand; };
+    private logger!: LoggerService;
+    private commands!: { [command: string] : BaseCommand; };
 
     constructor(
         private prefix: string,
         private token: string
     ) {
-        this.logger = new LoggerService();
-        this.commands = {};
-
         if (DiscordService._instance) {
             return DiscordService._instance;
         }
 
         DiscordService._instance = this;
 
+        this.commands = {};
+        this.logger = new LoggerService();
         this.logger.verbose(`Creating a new instance of DiscordService`);
 
         this.initialize();
@@ -69,7 +68,7 @@ export class DiscordService {
             const fullCommand = message.content.slice(1);
             const commandParts = fullCommand.split(' ');
             const command = commandParts.shift();
-            
+
             if(command !== undefined){
                 this.handleCommand(message, command.toLowerCase(), commandParts);
             }

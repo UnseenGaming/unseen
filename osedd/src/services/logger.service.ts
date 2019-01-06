@@ -2,9 +2,9 @@ import * as Winston from 'winston';
 
 export class LoggerService {
     private static instance: LoggerService;
-    private logger: Winston.Logger;
+    private logger!: Winston.Logger;
 
-    constructor() {
+    constructor() {        
         if (LoggerService.instance) {
             return LoggerService.instance;
         }
