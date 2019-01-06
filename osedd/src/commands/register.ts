@@ -8,6 +8,6 @@ export const commandRegister = (discordService: DiscordService, prefix: string) 
     const logger = new LoggerService();
     logger.info(`Registering commands`);
 
-    discordService.registerCommand('sr', new SquadRecommendationCommand(prefix))
-    discordService.registerCommand('rr', new RosterRankCommand(prefix))
-}
+    discordService.registerCommand('sr', new SquadRecommendationCommand(prefix));
+    discordService.registerCommand('rr', new RosterRankCommand(prefix));
+};

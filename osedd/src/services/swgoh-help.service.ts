@@ -1,5 +1,4 @@
 import * as ApiSwgohHelp from 'api-swgoh-help';
-import * as cloneDeep from 'lodash.clonedeep';
 import { InstanceType } from 'typegoose';
 import * as fs from 'fs-extra';
 
@@ -23,12 +22,13 @@ export class SwgohHelpService {
         private username?: string,
         private password?: string
     ) {
+        this.logger = new LoggerService();
+
         if (SwgohHelpService.instance) {
             return SwgohHelpService.instance;
         }
 
         SwgohHelpService.instance = this;
-        this.logger = new LoggerService();
 
         this.logger.info(`Regestering with swgoh.help with username ${this.username}`);
 
@@ -60,10 +60,10 @@ export class SwgohHelpService {
     }): Promise<SwgohHelpPlayer[]>{
         const allycodes = payload.allycodes;
         const swgohAllycodes = [];
-        let players: InstanceType<SwgohHelpPlayer>[] = [];
+        const players: Array<InstanceType<SwgohHelpPlayer>> = [];
 
         for(let i=0; i<allycodes.length;i++){
-            const allycode = Number.parseInt(payload.allycodes[i]);
+            const allycode = Number.parseInt(payload.allycodes[i], 10);
             const player = await SwgohHelpPlayerModel.findOne({allyCode: allycode});
 
             if(player == null){
@@ -78,10 +78,10 @@ export class SwgohHelpService {
             const newPayload = {
                 ...payload,
                 allycodes: swgohAllycodes
-            }
+            };
 
             this.logger.info(`Querying swgoh.help for player allycodes ${newPayload.allycodes.join(', ')}`);
-            let { result, error, warning } = await this.swapi.fetchPlayer( newPayload );
+            const { result, error, warning } = await this.swapi.fetchPlayer( newPayload );
             
             for(let i=0; i<result.length;i++){
                 const playerData = new SwgohHelpPlayerModel(result[0]);
@@ -90,7 +90,7 @@ export class SwgohHelpService {
                     await playerData.save();
                     players.push(playerData);
                 } catch(error){
-                    this.logger.error(`Couldn't save player to db: ${error.message}`)
+                    this.logger.error(`Couldn't save player to db: ${error.message}`);
                 }
             }
         }
@@ -117,7 +117,7 @@ export class SwgohHelpService {
                     "categoryIdList": 1,
                     "combatType": 1    
                 }
-            })
+            });
 
             for(let i=0; i<units.length; i++){
                 const dbUnit = new SwgohHelpCharacterModel(units[i]);
@@ -145,7 +145,7 @@ export class SwgohHelpService {
                     "abilityReference":1, 
                     "isZeta":1    
                 }
-            })
+            });
 
             const abilities = await this.fetchData({
                 "collection": "abilityList",
@@ -156,15 +156,15 @@ export class SwgohHelpService {
                     "type":1, 
                     "nameKey":1    
                 }
-            })
+            });
 
-            skills.map((skill) => {
-                const skillName = abilities.find((ability) => ability.id === skill.abilityReference);
+            skills.map((skill: any) => {
+                const skillName = abilities.find((ability: any) => ability.id === skill.abilityReference);
                 if(skillName !== undefined){
                     skill.nameKey = skillName.nameKey;
                 }
                 return skill;
-            })
+            });
 
             for(let i=0; i<skills.length; i++){
                 const dbUnit = new SwgohHelpSkillsModel(skills[i]);
@@ -217,7 +217,7 @@ export class SwgohHelpService {
         language?: string,
         enums?: boolean
     }){
-        let { result, error, warning } = await this.swapi.fetchData( payload );
+        const { result, error, warning } = await this.swapi.fetchData( payload );
         return result;
     }
 
@@ -294,7 +294,7 @@ export class SwgohHelpService {
         structure?: boolean,
         project?: string
     }){
-        let { result, error, warning } = await this.swapi.fetchGuild( payload );
+        const { result, error, warning } = await this.swapi.fetchGuild( payload );
         console.log(result);
     }
 }

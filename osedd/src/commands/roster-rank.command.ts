@@ -19,6 +19,7 @@ export class RosterRankCommand extends BaseCommand {
     ){
         super();
         this.swgohHelpService = new SwgohHelpService();
+        this.groups = [];
 
         this.init();
     }
@@ -26,7 +27,7 @@ export class RosterRankCommand extends BaseCommand {
     private async init(){
         const squads = await this.swgohHelpService.fetchSquads();
         
-        this.groups = squads.map((squad) => squad.group);
+        this.groups = squads.map((squad) => squad.group as string);
         this.groups = [...new Set(this.groups)];
     }
 
@@ -39,20 +40,21 @@ export class RosterRankCommand extends BaseCommand {
 
             const players = await this.swgohHelpService.fetchPlayers({
                 allycodes: [user]
-            })
+            });
             const player = players[0];
 
             let response = `Top ${this.topNumberOfToons} toons for ${user}\n`;
 
-            const scores = [...player.roster]
-                .filter((toon) => toon.combatType === 1)
-                .sort((a: SwgohHelpPlayerToon, b: SwgohHelpPlayerToon) => {
-                    return b.gp - a.gp;
-                }).slice(0,this.topNumberOfToons);
+            if(player.roster){
 
-            scores.forEach((toon) => {
-                response += `${toon.defId} ${toon.gp}\n`;
-            })
+                const scores = [...player.roster]
+                .filter((toon) => toon.combatType === 1)
+                .sort((a: SwgohHelpPlayerToon, b: SwgohHelpPlayerToon) => (b.gp as number) - (a.gp as number)).slice(0,this.topNumberOfToons);
+                
+                scores.forEach((toon) => {
+                    response += `${toon.defId} ${toon.gp}\n`;
+                });
+            }
 
             await this.discordService.reply(message, response);
         } else {

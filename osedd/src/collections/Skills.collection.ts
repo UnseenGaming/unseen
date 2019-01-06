@@ -20,4 +20,5 @@ export class SwgohHelpSkills extends Typegoose {
     nameKey?: string;
 }
 
+// tslint:disable-next-line:variable-name
 export const SwgohHelpSkillsModel = new SwgohHelpSkills().getModelForClass(SwgohHelpSkills);

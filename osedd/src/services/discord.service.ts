@@ -9,27 +9,27 @@ import { commandRegister } from '../commands/register';
 export class DiscordService {
     private static _instance: DiscordService;
     private logger: LoggerService;
-    private commands: { [command: string] : BaseCommand; } 
+    private commands: { [command: string] : BaseCommand; };
 
     constructor(
         private prefix: string,
         private token: string
     ) {
+        this.logger = new LoggerService();
+        this.commands = {};
+
         if (DiscordService._instance) {
             return DiscordService._instance;
         }
 
         DiscordService._instance = this;
 
-        this.logger = new LoggerService();
         this.logger.verbose(`Creating a new instance of DiscordService`);
-
-        this.commands = {};
 
         this.initialize();
     }
 
-    public static get instance(): DiscordService {
+    static get instance(): DiscordService {
         return this._instance;
     }
 
@@ -38,13 +38,13 @@ export class DiscordService {
 
         client.on('error', (error) => {
             this.logger.error(`Error in Discord connection: ${error.message}`);
-        })
+        });
  
         client.on('ready', () => {
           this.logger.info(`Logged in as ${client.user.tag}!`);
         });
          
-        client.on('message', (message) => { this.handleMessage(message) });
+        client.on('message', (message) => { this.handleMessage(message);});
                 
         try {
             await client.login(this.token);
@@ -56,7 +56,7 @@ export class DiscordService {
         commandRegister(this, this.prefix);
     }
 
-    public registerCommand(command: string, commandHandler: BaseCommand){
+    registerCommand(command: string, commandHandler: BaseCommand){
         this.logger.info(`Registering command ${command}`);
         this.commands[command] = commandHandler;
     }
@@ -68,9 +68,11 @@ export class DiscordService {
             
             const fullCommand = message.content.slice(1);
             const commandParts = fullCommand.split(' ');
-            const command = commandParts.shift().toLowerCase();
+            const command = commandParts.shift();
             
-            this.handleCommand(message, command, commandParts);
+            if(command !== undefined){
+                this.handleCommand(message, command.toLowerCase(), commandParts);
+            }
         }
     }
 
@@ -85,11 +87,11 @@ export class DiscordService {
         }
     }
 
-    public async removeReaction(message: Discord.Message, emojiName?:string){
+    async removeReaction(message: Discord.Message, emojiName?:string){
         const removeReactions = message.reactions.filter((reaction) => {
-            if(reaction.me == true){
+            if(reaction.me === true){
                 if(emojiName !== undefined){
-                    return reaction.emoji.name == emojiName;
+                    return reaction.emoji.name === emojiName;
                 } else {
                     return true;
                 }
@@ -98,9 +100,9 @@ export class DiscordService {
             }
         }).array();
 
-        for(var i=0; i<removeReactions.length; i++){
+        for(let i=0; i<removeReactions.length; i++){
             const react = removeReactions[i];
-            await react.remove()
+            await react.remove();
         }
     }
 
@@ -108,9 +110,7 @@ export class DiscordService {
         return Object.keys(this.commands).includes(command);
     }
 
-    public async reply(message: Discord.Message, content: any){
+    async reply(message: Discord.Message, content: any){
         message.channel.send(content);
     }
-
-    member: number;
 }

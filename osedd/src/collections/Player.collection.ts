@@ -9,73 +9,73 @@ import { Typegoose } from 'typegoose';
 
 export class SwgohHelpArenaSquadMember {
     @prop()
-    id: string
+    id?: string;
 
     @prop()
-    defId: string
+    defId?: string;
 
     @prop()
-    squadUnitType: number
+    squadUnitType?: number;
 }
 
 export class SwgohHelpArenaSquad {
     @prop()
-    rank: number
+    rank?: number;
 
     @arrayProp({ items: SwgohHelpArenaSquadMember })
-    squad: SwgohHelpArenaSquadMember[]
+    squad?: SwgohHelpArenaSquadMember[];
 }
 
 export class SwgohHelpArenaTeams {
     @arrayProp({ items: SwgohHelpArenaSquad })
-    char: SwgohHelpArenaSquad[]
+    char?: SwgohHelpArenaSquad[];
 
     @arrayProp({ items: SwgohHelpArenaSquad })
-    ship: SwgohHelpArenaSquad[]
+    ship?: SwgohHelpArenaSquad[];
 }
 
 export class SwgohHelpPlayerStat {
     @prop()
-    nameKey: string;
+    nameKey?: string;
 
     @prop()
-    value: string;
+    value?: string;
 
     @prop()
-    index: number;
+    index?: number;
 }
 
 export class SwgohHelpToonEquipmentSlot {
     @prop()
-    equipmentId: string;
+    equipmentId?: string;
 
     @prop()
-    slot: number;
+    slot?: number;
 
     @prop()
-    nameKey: string;
+    nameKey?: string;
 }
 
 export class SwgohHelpToonSkill {
     @prop()
-    id: string;
+    id?: string;
 
     @prop()
-    tier: number;
+    tier?: number;
 
     @prop()
-    nameKey: string;
+    nameKey?: string;
 
     @prop()
-    isZeta: boolean;
+    isZeta?: boolean;
 }
 
 export class SwgohHelpModStat {
     @prop()
-    unitStat: number;
+    unitStat?: number;
 
     @prop()
-    value: number;
+    value?: number;
 
     @prop()
     roll?: number;
@@ -83,63 +83,63 @@ export class SwgohHelpModStat {
 
 export class SwgohHelpToonMod {
     @prop()
-    id: string;
+    id?: string;
 
     @prop()
-    level: number;
+    level?: number;
 
     @prop()
-    tier: number;
+    tier?: number;
 
     @prop()
-    slot: number;
+    slot?: number;
 
     @prop()
-    set: number;
+    set?: number;
 
     @prop()
-    pips: number;
+    pips?: number;
 
     @prop()
-    primaryStat: SwgohHelpModStat;
+    primaryStat?: SwgohHelpModStat;
 
     @arrayProp({ items: SwgohHelpModStat })
-    secondaryStat: SwgohHelpModStat[];
+    secondaryStat?: SwgohHelpModStat[];
 }
 
 export class SwgohHelpPlayerToon {
     @prop()
-    id: string;
+    id?: string;
 
     @prop()
-    defId: string;
+    defId?: string;
 
     @prop()
-    nameKey: string;
+    nameKey?: string;
 
     @prop()
-    rarity: number;
+    rarity?: number;
 
     @prop()
-    level: number;
+    level?: number;
 
     @prop()
-    xp: number;
+    xp?: number;
 
     @prop()
-    gear: number;
+    gear?: number;
 
     @arrayProp({items: SwgohHelpToonEquipmentSlot})
-    equipped: SwgohHelpToonEquipmentSlot[];
+    equipped?: SwgohHelpToonEquipmentSlot[];
 
     @prop()
-    combatType: number;
+    combatType?: number;
 
     @arrayProp({ items: SwgohHelpToonSkill})
-    skills: SwgohHelpToonSkill[];
+    skills?: SwgohHelpToonSkill[];
 
     @arrayProp({ items: SwgohHelpToonMod})
-    mods: SwgohHelpToonMod[];
+    mods?: SwgohHelpToonMod[];
 
     // @arrayProp()
     // crew: something;
@@ -159,7 +159,7 @@ export class SwgohHelpPlayerToon {
     */
 
     @prop()
-    gp: number;
+    gp?: number;
 }
 
 
@@ -195,16 +195,17 @@ export class SwgohHelpPlayer extends Typegoose {
     guildTypeId?: string;
 
     @arrayProp({ items: SwgohHelpPlayerStat })
-    stats: SwgohHelpPlayerStat[];
+    stats?: SwgohHelpPlayerStat[];
 
     @arrayProp({ items: SwgohHelpPlayerToon })
-    roster: SwgohHelpPlayerToon[];
+    roster?: SwgohHelpPlayerToon[];
 
     @prop()
     arena?: SwgohHelpArenaTeams;
 
     @prop()
-    updated?: number
+    updated?: number;
 }
 
+// tslint:disable-next-line:variable-name
 export const SwgohHelpPlayerModel = new SwgohHelpPlayer().getModelForClass(SwgohHelpPlayer);

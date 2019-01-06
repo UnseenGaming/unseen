@@ -8,7 +8,7 @@ import { Typegoose } from 'typegoose';
 
 export class SwgohHelpSquadToon {
     @prop()
-    name: string; // ID name of toon
+    name?: string; // ID name of toon
 
     @prop()
     rarity?: number; // Number of stars required
@@ -20,7 +20,7 @@ export class SwgohHelpSquadToon {
     gear?: number; // Level of gear required, only supports full gear level at the moment
 
     @arrayProp({ items: String })
-    skills: string[]; // Array of required skills
+    skills?: string[]; // Array of required skills
 
     @prop()
     required?: boolean; // Required toon for this squad
@@ -56,4 +56,5 @@ export class SwgohHelpSquad extends Typegoose {
     team?: SwgohHelpSquadToon[];
 }
 
+// tslint:disable-next-line:variable-name
 export const SwgohHelpSquadModel = new SwgohHelpSquad().getModelForClass(SwgohHelpSquad);

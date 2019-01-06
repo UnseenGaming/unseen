@@ -17,7 +17,7 @@ export class HelpCommand extends BaseCommand {
             color: 3447003,
             title: "Help",
             description: "Available commands:",
-            fields: [],
+            fields: [] as any[],
             timestamp: new Date(),
           }
         };
@@ -26,7 +26,7 @@ export class HelpCommand extends BaseCommand {
             response.embed.fields.push({
                 name: `${this.prefix}${command}`,
                 value: this.commands[command].description()
-              });
+            });
         });
         
         await this.discordService.reply(message, response);

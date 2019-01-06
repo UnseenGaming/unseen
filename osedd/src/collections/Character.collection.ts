@@ -29,4 +29,5 @@ export class SwgohHelpCharacter extends Typegoose {
     categoryIdList?: string[];
 }
 
+// tslint:disable-next-line:variable-name
 export const SwgohHelpCharacterModel = new SwgohHelpCharacter().getModelForClass(SwgohHelpCharacter);

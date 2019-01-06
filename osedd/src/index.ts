@@ -13,7 +13,7 @@ const logger = new LoggerService();
 async function main() {
     logger.info('Reading configuration');
 
-    const configuration = await readConfiguration();
+    const configuration = await readConfiguration() as Configuration;
 
     const discord = new DiscordService(
         configuration.discord.prefix,
@@ -23,18 +23,20 @@ async function main() {
     const swgohHelp = new SwgohHelpService(
         configuration.swgohHelp.username,
         configuration.swgohHelp.password
-    )
+    );
 
     mongoose.connect('mongodb://localhost:27017/test');
 }
 
-async function readConfiguration(): Promise<Configuration>{
+async function readConfiguration(): Promise<Configuration | undefined>{
     if(await fse.pathExists('configuration.json')){
         return await fse.readJSON('configuration.json');
     } else {
         logger.error(`No configuration file found.`);
         process.exit();
     }
+    
+    return undefined;
 }
 
 main();

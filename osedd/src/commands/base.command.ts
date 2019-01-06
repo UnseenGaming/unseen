@@ -4,8 +4,8 @@ import { LoggerService } from '../services/logger.service';
 import { DiscordService } from '../services/discord.service';
 
 export interface HelpMessageFields {
-    name: string,
-    value: string
+    name: string;
+    value: string;
 }
 
 export class BaseCommand {
@@ -43,6 +43,6 @@ export class BaseCommand {
     }
 
     helpFields(): HelpMessageFields[] {
-        return null;
+        return [];
     }
 }

@@ -19,6 +19,7 @@ export class SquadRecommendationCommand extends BaseCommand {
         super();
         this.discordService = DiscordService.instance;
         this.swgohHelpService = new SwgohHelpService();
+        this.groups = [];
 
         this.init();
     }
@@ -26,7 +27,7 @@ export class SquadRecommendationCommand extends BaseCommand {
     private async init(){
         const squads = await this.swgohHelpService.fetchSquads();
         
-        this.groups = squads.map((squad) => squad.group);
+        this.groups = squads.map((squad) => squad.group as string);
         this.groups = [...new Set(this.groups)];
     }
 
@@ -40,8 +41,9 @@ export class SquadRecommendationCommand extends BaseCommand {
 
             const players = await this.swgohHelpService.fetchPlayers({
                 allycodes: [user]
-            })
+            });
             const player = players[0];
+            const playerRoster = player.roster as SwgohHelpPlayerToon[];
 
             const squads = await this.swgohHelpService.fetchSquads(group);
             const characterDefs = await this.swgohHelpService.fetchUnitList();
@@ -63,37 +65,44 @@ export class SquadRecommendationCommand extends BaseCommand {
 
                 response.embed.description += `:star::gear::level_slider:\n`;
 
-                squads[i].team.forEach((squadMember) => {
-                    let playerToon = player.roster.find((toon) => toon.defId === squadMember.name);
-
-                    if(playerToon === undefined){
-                        playerToon = {
-                            rarity: 0,
-                            gear: 0,
-                            level: 0,
-                            skills: []
-                        } as SwgohHelpPlayerToon
-
-                        unlockedToons = false;
-                        response.embed.color = 0xfc1f4c;
-                    }
-
-                    const characterDef = characterDefs.find((char) => char.baseId === squadMember.name);
-                    
-                    const checkRequirements = [
-                        this.checkRequirement(squadMember.rarity, playerToon.rarity),
-                        this.checkRequirement(squadMember.gear, playerToon.gear),
-                        this.checkRequirement(squadMember.level, playerToon.level)
-                    ]
-
-                    allRequirementsMet = allRequirementsMet && checkRequirements.every((requirement) => requirement === ':white_check_mark:');
-
-                    response.embed.description += `${checkRequirements.join('')} ${characterDef.nameKey}\n`;
-
-                    if(!allRequirementsMet && unlockedToons){
-                        response.embed.color = 0xfc601f;
-                    }
-                });
+                if(squads[i].team !== undefined){
+                    const squadTeam = squads[i].team as SwgohHelpSquadToon[];
+                    squadTeam.forEach((squadMember) => {
+                        let playerToon = playerRoster.find((toon) => toon.defId === squadMember.name);
+                        
+                        if(playerToon === undefined){
+                            playerToon = {
+                                rarity: 0,
+                                gear: 0,
+                                level: 0,
+                                skills: []
+                            } as SwgohHelpPlayerToon;
+                            
+                            unlockedToons = false;
+                            response.embed.color = 0xfc1f4c;
+                        }
+                        
+                        const characterDef = characterDefs.find((char) => char.baseId === squadMember.name);
+                        
+                        const checkRequirements = [
+                            this.checkRequirement(squadMember.rarity, playerToon.rarity),
+                            this.checkRequirement(squadMember.gear, playerToon.gear),
+                            this.checkRequirement(squadMember.level, playerToon.level)
+                        ];
+                        
+                        allRequirementsMet = allRequirementsMet && checkRequirements.every((requirement) => requirement === ':white_check_mark:');
+                        
+                        if(characterDef && characterDef.nameKey){
+                            response.embed.description += `${checkRequirements.join('')} ${characterDef.nameKey}\n`;
+                        }else {
+                            response.embed.description += `${checkRequirements.join('')} ${squadMember.name}\n`;
+                        }
+                        
+                        if(!allRequirementsMet && unlockedToons){
+                            response.embed.color = 0xfc601f;
+                        }
+                    });
+                }
 
                 await this.discordService.reply(message, response);
             }
@@ -104,8 +113,8 @@ export class SquadRecommendationCommand extends BaseCommand {
         }
     }
 
-    checkRequirement(goal, current){
-        if(goal>current){
+    checkRequirement(goal: number | undefined, current: number | undefined){
+        if((goal || 0)>(current || 0)){
             return ':no_entry_sign:';
         } else {
             return ':white_check_mark:';
