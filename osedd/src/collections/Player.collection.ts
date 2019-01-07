@@ -204,7 +204,10 @@ export class SwgohHelpPlayer extends Typegoose {
     arena?: SwgohHelpArenaTeams;
 
     @prop()
-    updated?: number;
+    updated?: number; // When the data was updated from the game
+
+    @prop()
+    retrieved?: number; // When the data was retrieved from the server
 }
 
 // tslint:disable-next-line:variable-name

@@ -8,7 +8,10 @@ import { Typegoose } from 'typegoose';
 
 export class SwgohHelpSkills extends Typegoose {
     @prop()
-    id?: string; // ID of the skill
+    id?: string; // internal id
+
+    @prop()
+    skillId?: string; // ID of the skill
 
     @prop()
     abilityReference?: string; // Name of group this squad is useful for, for example hstr etc.
@@ -18,6 +21,9 @@ export class SwgohHelpSkills extends Typegoose {
 
     @prop()
     nameKey?: string;
+
+    @prop()
+    tiers?: number; // Total number of tiers in skill
 }
 
 // tslint:disable-next-line:variable-name

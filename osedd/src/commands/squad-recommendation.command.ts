@@ -8,6 +8,7 @@ import { BaseCommand } from './base.command';
 import { HelpMessageFields } from './base.command';
 import { SwgohHelpSquadToon } from '../collections/Squad.collection';
 import { SwgohHelpPlayer, SwgohHelpPlayerToon, SwgohHelpToonSkill } from '../collections/Player.collection';
+import { SwgohHelpSkills } from '../collections/Skills.collection';
 
 interface SquadRequirements {
     requirements: {
@@ -47,7 +48,6 @@ export class SquadRecommendationCommand extends BaseCommand {
 
 
     async handleCommand(message: Discord.Message, parameters: string[]): Promise<void>{
-        
         if(parameters !== null && parameters.length > 0){
             const user = parameters[0];
             const group = parameters[1];
@@ -82,7 +82,8 @@ export class SquadRecommendationCommand extends BaseCommand {
 
                     const squadRequirements: SquadRequirements[] = [];
 
-                    squadTeam.forEach((squadMember) => {
+                    for(let j=0; j<squadTeam.length; j++){
+                        const squadMember = squadTeam[j];
                         const playerToon = playerRoster.find((toon) => toon.defId === squadMember.name);
                         const characterDef = characterDefs.find((char) => char.baseId === squadMember.name);
                         
@@ -110,12 +111,12 @@ export class SquadRecommendationCommand extends BaseCommand {
                             checkRequirements.requirements.rarity = this.checkRequirement(squadMember.rarity, playerToon.rarity);
                             checkRequirements.requirements.gear = this.checkRequirement(squadMember.gear, playerToon.gear);
                             checkRequirements.requirements.level = this.checkRequirement(squadMember.level, playerToon.level);
-                            checkRequirements.requirements.skills = this.checkSkills(squadMember.skills || [], playerToon.skills);
+                            checkRequirements.requirements.skills = await this.checkSkills(squadMember.skills || [], playerToon.skills);
                             checkRequirements.ready = checkRequirements.requirements.rarity && checkRequirements.requirements.gear && checkRequirements.requirements.level && checkRequirements.requirements.skills;
                         }
                         
                         squadRequirements.push(checkRequirements);
-                    });
+                    }
                     
                     squadRequirements.forEach((squadMemberRequirement) => {                        
                         response.embed.description += `${Object.keys(squadMemberRequirement.requirements).map((req) => this.requirmentToIcon(squadMemberRequirement.requirements[req])).join('')} `;
@@ -148,13 +149,13 @@ export class SquadRecommendationCommand extends BaseCommand {
         }
     }
 
-    checkSkills(targetSkills: string[], toonSkills: SwgohHelpToonSkill[] | undefined){
+    async checkSkills(targetSkills: string[], toonSkills: SwgohHelpToonSkill[] | undefined){
         let skillsOk = true;
 
         if(toonSkills !== undefined && toonSkills.length > 0){
-            toonSkills.forEach((skill) => {
-                skillsOk = skillsOk && this.checkSkill(targetSkills, skill);
-            });
+            for(let i=0; i<toonSkills.length; i++){
+                skillsOk = skillsOk && await this.checkSkill(targetSkills, toonSkills[i]);
+            }
         } else {
             skillsOk = false;
         }
@@ -162,18 +163,21 @@ export class SquadRecommendationCommand extends BaseCommand {
         return skillsOk;
     }
 
-    checkSkill(targetSkills: string[], toonSkill: SwgohHelpToonSkill){
+    async checkSkill(targetSkills: string[], toonSkill: SwgohHelpToonSkill){
         if(toonSkill.tier){
+            const skills = await this.swgohHelpService.fetchSkillList(toonSkill.id);
+            const skill = skills[0] as SwgohHelpSkills;
+
             if(toonSkill.isZeta){
                 const inRequiredList = targetSkills.find((requiredSkill) => requiredSkill === toonSkill.id);
                 if(inRequiredList){
-                    return toonSkill.tier >= 8;
+                    return toonSkill.tier === skill.tiers;
                 } else {
-                    return toonSkill.tier >= 7;
+                    return toonSkill.tier >= (skill.tiers || 7) - 1;
                 }
             } else {
                 // FIXME: Some skills have max tier 7, need a way to check max skill level
-                return toonSkill.tier >= 8;                
+                return toonSkill.tier >= (skill.tiers || 7);
             }
         } else {
             return false;

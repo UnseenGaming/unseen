@@ -64,14 +64,15 @@ export class SwgohHelpService {
         for(let i=0; i<allycodes.length;i++){
             const allycode = Number.parseInt(payload.allycodes[i], 10);
             // const player = await SwgohHelpPlayerModel.findOne({allyCode: allycode});
-            const player = (await SwgohHelpPlayerModel.find({allyCode: allycode}).sort({updated:-1}).limit(1))[0];
+            const player = (await SwgohHelpPlayerModel.find({allyCode: allycode}).sort({retrieved:-1}).limit(1))[0];
             if(player == null){
                 swgohAllycodes.push(payload.allycodes[i]);
             } else {
                 this.logger.info(`Found player with allycode ${player.allyCode} in database`);
 
-                if((Date.now() - (player.updated || 0)) / (3600000) >= 1){
-                    this.logger.info(`Data for player with allycode ${player.allyCode} is stale, retrieving new`);
+                const updateDiff = ((Date.now() - (player.retrieved || 0)) / (3600000));
+                if(updateDiff >= 1){
+                    this.logger.info(`Data for player with allycode ${player.allyCode} is stale (${updateDiff} hours old), retrieving new`);
                     swgohAllycodes.push(payload.allycodes[i]);
                 } else {
                     players.push(player);
@@ -89,7 +90,10 @@ export class SwgohHelpService {
             const { result, error, warning } = await this.swapi.fetchPlayer( newPayload );
             
             for(let i=0; i<result.length;i++){
-                const playerData = new SwgohHelpPlayerModel(result[0]);
+                const playerData = new SwgohHelpPlayerModel({
+                    ...result[0],
+                    retrieved: Date.now()
+                });
                 
                 try{
                     await playerData.save();
@@ -137,10 +141,12 @@ export class SwgohHelpService {
         }
     }
 
-    async fetchSkillList(nameKey?: string){ //: Promise<SwgohHelpCharacter[]> {
+    async fetchSkillList(id?: string): Promise<SwgohHelpSkills[]> {
         const numberOfSkills = await SwgohHelpSkillsModel.estimatedDocumentCount();
 
         if(numberOfSkills === 0){
+            this.logger.info(`Constructing skills collection.`);
+
             const skills = await this.fetchData({
                 "collection": "skillList",
                 "language": "eng_us",
@@ -148,7 +154,7 @@ export class SwgohHelpService {
                 "project": {
                     "id":1, 
                     "abilityReference":1, 
-                    "isZeta":1    
+                    "isZeta":1
                 }
             });
 
@@ -157,9 +163,10 @@ export class SwgohHelpService {
                 "language": "eng_us",
                 "enums":true,
                 "project": {
-                    "id":1, 
-                    "type":1, 
-                    "nameKey":1    
+                    "id":1,
+                    "type":1,
+                    "nameKey":1,
+                    "tierList": 1
                 }
             });
 
@@ -167,7 +174,11 @@ export class SwgohHelpService {
                 const skillName = abilities.find((ability: any) => ability.id === skill.abilityReference);
                 if(skillName !== undefined){
                     skill.nameKey = skillName.nameKey;
+                    skill.tiers = skillName.tierList.length;
                 }
+
+                skill.skillId = skill.id;
+                delete skill.id;
                 return skill;
             });
 
@@ -177,10 +188,10 @@ export class SwgohHelpService {
             }
         }
 
-        if(nameKey){
-            return await SwgohHelpCharacterModel.find({nameKey});
+        if(id){
+            return await SwgohHelpSkillsModel.find({skillId: id});
         } else {
-            return await SwgohHelpCharacterModel.find();
+            return await SwgohHelpSkillsModel.find();
         }
     }
 
