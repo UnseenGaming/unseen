@@ -171,9 +171,9 @@ export class SquadRecommendationCommand extends BaseCommand {
             if(toonSkill.isZeta){
                 const inRequiredList = targetSkills.find((requiredSkill) => requiredSkill === toonSkill.id);
                 if(inRequiredList){
-                    return toonSkill.tier === skill.tiers;
+                    return toonSkill.tier === (skill.tiers || 7) + 1;
                 } else {
-                    return toonSkill.tier >= (skill.tiers || 7) - 1;
+                    return toonSkill.tier >= (skill.tiers || 7);
                 }
             } else {
                 // FIXME: Some skills have max tier 7, need a way to check max skill level
